@@ -48,6 +48,15 @@ def init_db():
             ("Royal Travels", "Chandigarh", "Delhi", "09:00 AM", "01:00 PM", 550, 40),
             ("Night Rider", "Delhi", "Jaipur", "10:00 PM", "05:00 AM", 800, 40),
             ("Punjab Express", "Ludhiana", "Delhi", "07:00 AM", "01:00 PM", 600, 40),
+            ("Doaba Travels", "Nawanshahr", "Chandigarh", "07:30 AM", "11:00 AM", 300, 40),
+            ("Doaba Travels", "Chandigarh", "Nawanshahr", "04:00 PM", "07:30 PM", 300, 40),
+            ("Jalandhar Link", "Jalandhar", "Delhi", "06:00 AM", "01:00 PM", 700, 40),
+            ("Jalandhar Link", "Delhi", "Jalandhar", "03:00 PM", "10:00 PM", 700, 40),
+            ("Golden Temple Express", "Amritsar", "Delhi", "08:30 PM", "05:30 AM", 850, 40),
+            ("Golden Temple Express", "Delhi", "Amritsar", "09:00 PM", "06:00 AM", 850, 40),
+            ("Nawanshahr Express", "Nawanshahr", "Jalandhar", "09:00 AM", "10:30 AM", 120, 40),
+            ("Nawanshahr Express", "Jalandhar", "Nawanshahr", "05:00 PM", "06:30 PM", 120, 40),
+            ("Punjab Roadways", "Ludhiana", "Chandigarh", "11:00 AM", "01:30 PM", 250, 40),
         ]
         conn.executemany("""
             INSERT INTO buses

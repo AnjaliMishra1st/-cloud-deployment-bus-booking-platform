@@ -28,11 +28,20 @@
 <section class="search-section" id="search">
     <h2>Find Your Bus</h2>
     <div class="search-box">
-        <input id="source" placeholder="From City">
-        <input id="destination" placeholder="To City">
+        <input id="source" list="cities" placeholder="From City" autocomplete="off">
+        <input id="destination" list="cities" placeholder="To City" autocomplete="off">
         <input id="travelDate" type="date">
         <button onclick="searchBuses()">Search Buses</button>
     </div>
+    <datalist id="cities">
+        <option value="Delhi">
+        <option value="Chandigarh">
+        <option value="Jaipur">
+        <option value="Ludhiana">
+        <option value="Nawanshahr">
+        <option value="Jalandhar">
+        <option value="Amritsar">
+    </datalist>
     <div id="busResults" class="bus-results"></div>
 </section>
 
