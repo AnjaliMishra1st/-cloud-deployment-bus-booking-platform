@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusGo - Bus Booking Platform</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header>
+    <div class="logo">Bus<span>Go</span></div>
+    <nav>
+        <a href="#home">Home</a>
+        <a href="#search">Search Buses</a>
+        <a href="#bookings">My Bookings</a>
+    </nav>
+</header>
+
+<section class="hero" id="home">
+    <div class="hero-content">
+        <h1>Your Journey,<br>Our Responsibility.</h1>
+        <p>Book your bus tickets easily, quickly and securely.</p>
+        <a href="#search" class="button">Book Your Journey</a>
+    </div>
+</section>
+
+<section class="search-section" id="search">
+    <h2>Find Your Bus</h2>
+    <div class="search-box">
+        <input id="source" placeholder="From City">
+        <input id="destination" placeholder="To City">
+        <input id="travelDate" type="date">
+        <button onclick="searchBuses()">Search Buses</button>
+    </div>
+    <div id="busResults" class="bus-results"></div>
+</section>
+
+<section class="booking-section" id="bookings">
+    <h2>My Bookings</h2>
+    <button onclick="loadBookings()">Refresh Bookings</button>
+    <div id="bookingResults"></div>
+</section>
+
+<footer>
+    <p>BusGo | Cloud Deployment &amp; CI/CD Project</p>
+    <p>Powered by Docker, Flask and AWS</p>
+</footer>
+
+<script>
+const today = new Date().toISOString().split("T")[0];
+document.getElementById("travelDate").min = today;
+document.getElementById("travelDate").value = today;
+
+async function searchBuses() {
+    const source = document.getElementById("source").value;
+    const destination = document.getElementById("destination").value;
+    const date = document.getElementById("travelDate").value;
+
+    if (!source || !destination || !date) {
+        alert("Please enter all search details");
+        return;
+    }
+
+    const response = await fetch(
+        `/api/buses?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(destination)}&date=${date}`
+    );
+    const buses = await response.json();
+    const results = document.getElementById("busResults");
+    results.innerHTML = "";
+
+    if (buses.length === 0) {
+        results.innerHTML = "<p>No buses found.</p>";
+        return;
+    }
+
+    buses.forEach(bus => {
+        const card = document.createElement("div");
+        card.className = "bus-card";
+
+        const heading = document.createElement("h3");
+        heading.textContent = bus.name;
+        const route = document.createElement("p");
+        route.textContent = `${bus.source} → ${bus.destination}`;
+        const time = document.createElement("p");
+        time.textContent = `${bus.departure} - ${bus.arrival}`;
+        const price = document.createElement("p");
+        price.textContent = `₹${bus.price}`;
+        const seats = document.createElement("p");
+        seats.textContent = `Available seats: ${bus.available_seats}`;
+
+        const input = document.createElement("input");
+        input.placeholder = "Your name";
+        input.maxLength = 100;
+
+        const select = document.createElement("select");
+        for (let i = 1; i <= bus.total_seats; i++) {
+            const option = document.createElement("option");
+            option.value = i;
+            option.textContent = `Seat ${i}`;
+            select.appendChild(option);
+        }
+
+        const button = document.createElement("button");
+        button.textContent = "Book Now";
+        button.onclick = () => bookSeat(bus.id, input.value, select.value, date);
+
+        card.append(heading, route, time, price, seats, input, select, button);
+        results.appendChild(card);
+    });
+}
+
+async function bookSeat(busId, passenger, seat, date) {
+    if (!passenger.trim()) {
+        alert("Enter passenger name");
+        return;
+    }
+    const response = await fetch("/api/bookings", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({
+            bus_id: busId,
+            passenger: passenger,
+            seat_number: seat,
+            travel_date: date
+        })
+    });
+    const result = await response.json();
+    alert(result.message || result.error);
+    if (response.ok) {
+        searchBuses();
+        loadBookings();
+    }
+}
+
+async function loadBookings() {
+    const response = await fetch("/api/bookings");
+    const bookings = await response.json();
+    const results = document.getElementById("bookingResults");
+    results.innerHTML = "";
+
+    if (bookings.length === 0) {
+        results.textContent = "No bookings available.";
+        return;
+    }
+
+    bookings.forEach(booking => {
+        const card = document.createElement("div");
+        card.className = "booking-card";
+
+        const details = document.createElement("p");
+        details.textContent =
+            `Booking #${booking.id} | ${booking.passenger} | ` +
+            `${booking.bus_name} | Seat ${booking.seat_number} | ` +
+            `${booking.travel_date}`;
+
+        const button = document.createElement("button");
+        button.textContent = "Cancel Booking";
+        button.onclick = async () => {
+            if (!confirm("Cancel this booking?")) return;
+            const result = await fetch(`/api/bookings/${booking.id}`, {method: "DELETE"});
+            const data = await result.json();
+            alert(data.message || data.error);
+            loadBookings();
+            if (document.getElementById("busResults").children.length) searchBuses();
+        };
+
+        card.append(details, button);
+        results.appendChild(card);
+    });
+}
+
+loadBookings();
+</script>
+</body>
+</html>
